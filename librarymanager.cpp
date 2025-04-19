@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTextStream>
+#include <QLinkedList>
 
 // Добавляет новую литературу в коллекцию.
 void LibraryManager::addLiterature(const Literature &lit) {

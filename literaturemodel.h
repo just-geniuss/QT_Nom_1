@@ -3,13 +3,13 @@
 
 #include <QAbstractTableModel>
 #include "literature.h"
-#include <QList>
+#include <QLinkedList>
 
 class LiteratureModel : public QAbstractTableModel {
     Q_OBJECT
 public:
     LiteratureModel(QObject *parent = nullptr);
-    void setData(const QList<Literature> &data);
+    void setData(const QLinkedList<Literature> &data);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
@@ -21,7 +21,7 @@ public:
     Literature getLiterature(const QModelIndex &index) const;
 
 private:
-    QList<Literature> library;
+    QLinkedList<Literature> library;
 };
 
 #endif // LITERATUREMODEL_H

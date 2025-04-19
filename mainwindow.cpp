@@ -24,7 +24,7 @@ MainWindow::~MainWindow() {
 
 // Обновляет данные в таблице из менеджера
 void MainWindow::updateTable() {
-    model->setData(manager.library);  // передаём QList из менеджера в модель
+    model->setData(manager.library);  // передаём QLinkedList из менеджера в модель
 }
 
 // Слот обработки нажатия на кнопку "Добавить"

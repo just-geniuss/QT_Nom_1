@@ -2,12 +2,12 @@
 #define LIBRARYMANAGER_H
 
 #include "literature.h"
-#include <QList>
+#include <QLinkedList>
 #include <QString>
 
 class LibraryManager {
 public:
-    QList<Literature> library;
+    QLinkedList<Literature> library;
 
     void addLiterature(const Literature &lit);
     void removeLiterature(const QString &uid);
