@@ -1,78 +1,104 @@
 #include "literaturemodel.h"
 #include "qregularexpression.h"
 
-// Конструктор модели, инициализирует базовый QAbstractTableModel с указанным родителем.
+// Реализация конструктора модели
+// Просто вызывает конструктор базового класса с переданным родителем
 LiteratureModel::LiteratureModel(QObject *parent) : QAbstractTableModel(parent) {}
 
-// Метод устанавливает новые данные (QList с литературой) и сообщает модели, что данные обновились.
+// Реализация метода установки данных в модель
 void LiteratureModel::setData(const QList<Literature> &data) {
-    beginResetModel();   // сигнализируем начало сброса модели
-    library = data;      // сохраняем новые данные
-    endResetModel();     // сигнализируем завершение сброса модели
+    // beginResetModel сообщает представлениям (таблицам), что модель будет полностью обновлена
+    beginResetModel();   
+    // Копируем новые данные
+    library = data;      
+    // endResetModel сообщает, что обновление завершено и представления должны перерисоваться
+    endResetModel();     
 }
 
-// Возвращает количество строк в таблице, равное количеству записей в библиотеке.
+// Реализация метода для получения количества строк в модели
 int LiteratureModel::rowCount(const QModelIndex &parent) const {
+    // Q_UNUSED игнорирует неиспользуемый параметр (подавляет предупреждение компилятора)
     Q_UNUSED(parent);
+    // Количество строк равно размеру нашего списка
     return library.size();
 }
 
-// Возвращает количество колонок — UID, Название и Автор.
+// Реализация метода для получения количества столбцов в модели
 int LiteratureModel::columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
-    return 3; // UID, Title, Author
+    // У нас 3 столбца: UID, Название и Автор
+    return 3; 
 }
 
+// Реализация метода добавления нового произведения в модель
 void LiteratureModel::addLiterature(const Literature &lit) {
-    int row = library.size(); // индекс новой строки
-    beginInsertRows(QModelIndex(), row, row); // сообщаем о вставке новой строки
-    library.append(lit);                     // вставляем новую запись в QList
-    endInsertRows();                          // завершаем вставку строки
+    // Индекс новой строки будет равен текущему размеру списка
+    int row = library.size(); 
+    // Сообщаем представлениям о начале вставки новой строки
+    beginInsertRows(QModelIndex(), row, row); 
+    // Добавляем произведение в список
+    library.append(lit);                     
+    // Сообщаем представлениям о завершении вставки
+    endInsertRows();                          
 }
 
+// Реализация метода удаления произведения из модели
 bool LiteratureModel::removeLiterature(const QString &uid) {
+    // Ищем произведение по UID
     for (int i = 0; i < library.size(); ++i) {
         if (library.at(i).uid == uid) {
+            // Сообщаем представлениям о начале удаления строки
             beginRemoveRows(QModelIndex(), i, i);
+            // Удаляем элемент из списка
             library.removeAt(i);
+            // Сообщаем представлениям о завершении удаления
             endRemoveRows();
             return true;
         }
     }
-    return false;
+    return false; // Произведение не найдено
 }
 
+// Реализация метода обновления произведения в модели
 bool LiteratureModel::updateLiterature(const QString &uid, const Literature &newLit) {
+    // Ищем произведение по UID
     for (int i = 0; i < library.size(); ++i) {
         if (library.at(i).uid == uid) {
+            // Обновляем элемент
             library[i] = newLit;
+            // Создаем индексы для левого верхнего и правого нижнего углов обновляемой области
             QModelIndex topLeft = index(i, 0);
             QModelIndex bottomRight = index(i, columnCount() - 1);
+            // Сигнализируем представлениям, что данные изменились
             emit dataChanged(topLeft, bottomRight);
             return true;
         }
     }
-    return false;
+    return false; // Произведение не найдено
 }
 
-// Возвращает данные для отображения в ячейках таблицы.
-// Используется только роль DisplayRole (т.е. для вывода текста).
+// Реализация метода получения данных для ячейки таблицы
 QVariant LiteratureModel::data(const QModelIndex &index, int role) const {
+    // Qt::DisplayRole - это роль для отображения текста в ячейке
     if (role == Qt::DisplayRole) {
-        const Literature &lit = library.at(index.row()); // получаем литературу по индексу строки
+        // Получаем произведение по индексу строки
+        const Literature &lit = library.at(index.row()); 
+        // В зависимости от столбца возвращаем разные поля
         switch (index.column()) {
         case 0: return lit.uid;     // UID
         case 1: return lit.title;   // Название
         case 2: return lit.author;  // Автор
         }
     }
-    return QVariant();  // если роль не поддерживается или индекс некорректен
+    // Если роль не поддерживается или индекс некорректен, возвращаем пустой QVariant
+    return QVariant();  
 }
 
-// Устанавливает заголовки колонок таблицы.
-// Отображаются только горизонтальные заголовки и только при DisplayRole.
+// Реализация метода для получения заголовков столбцов/строк
 QVariant LiteratureModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    // Обрабатываем только горизонтальные заголовки (столбцы) для роли отображения
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+        // В зависимости от номера столбца возвращаем разные заголовки
         switch (section) {
         case 0: return "UID";
         case 1: return "Название";
@@ -82,8 +108,9 @@ QVariant LiteratureModel::headerData(int section, Qt::Orientation orientation, i
     return QVariant();
 }
 
-// Возвращает объект Literature по индексу строки — удобно для обработки событий (например, выбора записи).
+// Реализация метода для получения произведения по индексу модели
 Literature LiteratureModel::getLiterature(const QModelIndex &index) const {
+    // Получаем произведение по индексу строки
     return library.at(index.row());
 }
 
